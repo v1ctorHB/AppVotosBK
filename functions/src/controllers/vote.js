@@ -35,11 +35,15 @@ const voteForPoint = async (req, res) => {
         if (!point.isActive) {
             return res.status(404).send({ message: 'Punto De Asamblea Desactivada' });
         }
-        let voteExist = await getCollection(COLLECTIONS.VOTES).where('assemblyPtId', '==', pointId).where('userId', '==', userReq.id).get();
+        let voteExist = await getCollection(COLLECTIONS.VOTES)
+            .where('assemblyPtId', '==', assemblyId)
+            .where('pointId', '==', pointId)
+            .where('userId', '==', userReq.id).get();
         if (voteExist.size) {
             return res.status(403).send({ message: 'Ya Hay Un Voto Con Este Usuario' });
         }
-        let params = req.body; 
+        // se obtiene el tipo del voto a realizar
+        let params = req.body;
         if (!areMissingParams(params.type)) {
             return res.status(404).send({ message: 'Faltan Campos Principales' });
         }
@@ -68,6 +72,7 @@ const createVote = vote => {
     let voteToCreate = Vote;
     voteToCreate.type = vote.type;
     voteToCreate.assemblyPtId = vote.assemblyPointId;
+    voteToCreate.pointId = vote.pointId;
     voteToCreate.userId = vote.userId;
     return getCollection(COLLECTIONS.VOTES).add(voteToCreate);
 }

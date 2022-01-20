@@ -10,6 +10,7 @@ var AssemblyPoint = {
   nay:          Number,
   abstinence:   Number,
   isActive:     Boolean,
+  usersId: [],
 };
 
 module.exports = AssemblyPoint;

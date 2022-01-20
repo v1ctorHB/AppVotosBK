@@ -15,6 +15,7 @@ api.get('/admin/assemblies/:id',        md_auth.ensureAuth, assemblyController.g
 api.get('/admin/assemblies',            md_auth.ensureAuth, assemblyController.listAssemblies);
 
 // api.get('/assemblies/:id',              md_auth.ensureAuth, assemblyController.getAssemblyById);
+// api votantes
 api.get('/assemblies/active',           md_auth.ensureAuth, assemblyController.getActiveAssembly);
 
 // EXPORTS

@@ -203,7 +203,7 @@ const getActiveAssembly = async (req, res) => {
         }
         let assemblies = await getCollection(COLLECTIONS.ASSEMBLIES).where('isActive', '==', true).get();
         if (!assemblies.docs.length) {
-            return res.status(404).send({ message: 'No Se Encontró Alguna Asamblea Activa' });
+            return res.status(200).send({ message: 'No Se Encontró Alguna Asamblea Activa', assembly: [] });
         }
         let assembly = parseSnapshot(assemblies)[0];
         let attendances = await getCollection(COLLECTIONS.ATTENDANCE).where('assemblyId', '==', assembly.id).get();

@@ -284,12 +284,36 @@ const listPointsByActiveAssemblyById = async (req, res) => {
         if (!assembly.isActive) {
             return res.status(404).send({ message: 'Asamblea Deshabilitada' });
         }
-        let pointsSnap = await getCollection(COLLECTIONS.POINTS).where('assemblyId', '==', assemblyId).get();
+
+        let pointsSnap;
+
+        // filtrar las actividades activas de la agenda
+        if (req.query?.active === 'true') {
+            pointsSnap =  await getCollection(COLLECTIONS.POINTS)
+                .where('assemblyId', '==', assemblyId)
+                .where('isActive', '==', true).get()
+        } else {
+            pointsSnap =  await getCollection(COLLECTIONS.POINTS)
+                .where('assemblyId', '==', assemblyId).get()
+        }
+
         let points = parseQuerySnapshot(pointsSnap);
         if (!points) {
             return res.status(404).send({ message: 'Puntos De Asamblea No Encontrados' });
         }
-        return res.status(200).send({ message: 'Punto De Asamblea Obtenido Exitosamente', point });
+
+        if (req.query?.active === 'true' && points.length !== 0) {
+            // status del voto del usuario
+            points[0]['statusVote'] = false;
+            let userVote = await getCollection(COLLECTIONS.VOTES)
+                .where('assemblyPtId', '==', points[0].assemblyId)
+                .where('pointId', '==', points[0].id)
+                .where('userId', '==', req.user.sub).get();
+            if (userVote.size) {
+                points[0]['statusVote'] = true;
+            }
+        }
+        return res.status(200).send({ message: 'Punto De Asamblea Obtenido Exitosamente', points });
     } catch (error) {
         console.error(error);
         return res.status(400).send(error);
