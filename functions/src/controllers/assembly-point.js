@@ -286,9 +286,11 @@ const listPointsByActiveAssemblyById = async (req, res) => {
         }
 
         let pointsSnap;
+        let validateQuery = 'false';
 
         // filtrar las actividades activas de la agenda
         if (req.query.hasOwnProperty('active')) {
+            validateQuery = req.query.active || 'false';
             pointsSnap =  await getCollection(COLLECTIONS.POINTS)
                 .where('assemblyId', '==', assemblyId)
                 .where('isActive', '==', true).get()
@@ -301,8 +303,9 @@ const listPointsByActiveAssemblyById = async (req, res) => {
         if (!points) {
             return res.status(404).send({ message: 'Puntos De Asamblea No Encontrados' });
         }
+         
 
-        if (req.query?.active === 'true' && points.length !== 0) {
+        if (validateQuery === 'true' && points.length !== 0) {
             // status del voto del usuario
             points[0]['statusVote'] = false;
             let userVote = await getCollection(COLLECTIONS.VOTES)
