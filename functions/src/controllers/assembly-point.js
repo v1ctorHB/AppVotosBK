@@ -288,7 +288,7 @@ const listPointsByActiveAssemblyById = async (req, res) => {
         let pointsSnap;
 
         // filtrar las actividades activas de la agenda
-        if (req.query?.active === 'true') {
+        if (req.query.hasOwnProperty('active')) {
             pointsSnap =  await getCollection(COLLECTIONS.POINTS)
                 .where('assemblyId', '==', assemblyId)
                 .where('isActive', '==', true).get()
