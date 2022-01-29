@@ -147,7 +147,7 @@ const listPointsByAssemblyId = async (req, res) => {
         if (!userReq) {
             return res.status(400).send({ message: 'El Usuario Autenticado No Existe' });
         }
-        if (!validateRoles(userReq.role) || userReq.status == USER_STATUS.INACTIVE) {
+        if (!validateRolesActivePoint(userReq.role) || userReq.status == USER_STATUS.INACTIVE) {
             return res.status(403).send({ message: 'Acceso Denegado' });
         }
 
@@ -339,6 +339,12 @@ const areMissingParams = params =>
  */
 const validateRoles = role =>
     USER_ROLES.SYSTEMS === role ||
+    USER_ROLES.ADMIN === role ||
+    USER_ROLES.SUPER_ADMIN === role;
+
+const validateRolesActivePoint = role =>
+    USER_ROLES.SYSTEMS === role ||
+    USER_ROLES.DEPUTY == role ||
     USER_ROLES.ADMIN === role ||
     USER_ROLES.SUPER_ADMIN === role;
 
