@@ -34,19 +34,19 @@ const createDefaultadmin = async () => {
         let user = User;
         user.name       = 'admin';
         user.lastname   = 'development';
-        user.email      = 'denod48590@kruay.com';
+        user.email      = 'development@wearehumanbrands.com';
         user.password   = await hashField('admin_wahb_dev');
         user.country    = COUNTRIES.GUATEMALA;
         user.role       = USER_ROLES.SUPER_ADMIN;
-        user.status     = USER_STATUS.INACTIVE;
+        user.status     = USER_STATUS.ACTIVE;
         user.canVote    = false;
         user.isPresent  = false;
         user.image      = '';
         user.phoneNum   = '11111111';
         // create email and password in authentication
         const propertiesDataUser = {
-            'password': await hashField('admin_wahb_dev'),
-            'email': 'denod48590@kruay.com'
+            'password': 'admin_wahb_dev',
+            'email': user.email
         }
         // create user with email and password in Firebase Auth
         const { uid } = await configDb.auth().createUser(propertiesDataUser);

@@ -1,6 +1,6 @@
 'use strict';
 
-const db = require('../services/google');
+const {db} = require('../services/google');
 
 /**
  * Get parsed document by id as model
