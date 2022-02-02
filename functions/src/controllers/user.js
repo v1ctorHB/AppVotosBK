@@ -2,7 +2,8 @@
 
 const userDB            = 'USERS';
 const User              = require('../models/user');
-const db                = require('../services/google');
+const { db, configDb }  = require('../services/google');
+const authFirebase = require('firebase/auth');
 const jwt               = require('../services/jwt');
 const { validate }      = require('email-validator');
 const { COUNTRIES }     = require('../enums/country.enums');
@@ -33,7 +34,7 @@ const createDefaultadmin = async () => {
         let user = User;
         user.name       = 'admin';
         user.lastname   = 'development';
-        user.email      = 'development@wearehumanbrands.com';
+        user.email      = 'denod48590@kruay.com';
         user.password   = await hashField('admin_wahb_dev');
         user.country    = COUNTRIES.GUATEMALA;
         user.role       = USER_ROLES.SUPER_ADMIN;
@@ -42,6 +43,24 @@ const createDefaultadmin = async () => {
         user.isPresent  = false;
         user.image      = '';
         user.phoneNum   = '11111111';
+        // create email and password in authentication
+        const propertiesDataUser = {
+            'password': await hashField('admin_wahb_dev'),
+            'email': 'denod48590@kruay.com'
+        }
+        // create user with email and password in Firebase Auth
+        const { uid } = await configDb.auth().createUser(propertiesDataUser);
+        // create custom token with id user
+        const token = await  configDb.auth().createCustomToken(uid);
+        // get auth and app initialize in file -> google config
+        const auth = authFirebase.getAuth();
+        // authenticate user, param token and auth app
+        const result = await authFirebase.signInWithCustomToken(auth, token);
+        // send email verification
+        await authFirebase.sendEmailVerification(result.user);
+        // logout app user
+        await authFirebase.signOut(auth);
+        // save data user in firestore
         await getUsersCollection().add(user);
     } catch (error) {
         console.error(error);
@@ -177,8 +196,6 @@ const login = async (req, res) => {
         const token = jwt.createToken(userId);
         user.password   = undefined;
         user.phoneNum   = undefined;
-        user.country    = undefined;
-        user.role       = undefined;
         user.status     = undefined;
         return res.status(200).send({
             message: 'Usuario Autenticado Exitosamente', token: token, user: {

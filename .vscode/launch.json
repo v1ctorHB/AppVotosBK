@@ -1,0 +1,10 @@
+{
+    "configurations": [
+        {
+            "command": "npm run start",
+            "name": "debug votos back",
+            "request": "launch",
+            "type": "node-terminal"
+        }
+    ]
+}
