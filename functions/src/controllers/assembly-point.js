@@ -273,6 +273,11 @@ const listPointsByActiveAssemblyById = async (req, res) => {
         if (!userReq) {
             return res.status(400).send({ messag: 'El Usuario Autenticado No Existe' });
         }
+
+        if(userReq.role === USER_ROLES.SUPER_ADMIN) {
+            return res.status(403).send({ message: 'El admin no tiene acceso para votar' });
+        }
+
         if (userReq.role != USER_ROLES.DEPUTY || userReq.role == USER_STATUS.INACTIVE) {
             return res.status(403).send({ message: 'Acceso Denegado' });
         }

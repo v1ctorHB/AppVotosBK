@@ -43,23 +43,15 @@ const createDefaultadmin = async () => {
         user.isPresent  = false;
         user.image      = '';
         user.phoneNum   = '11111111';
-        // create email and password in authentication
-        const propertiesDataUser = {
-            'password': 'admin_wahb_dev',
-            'email': user.email
+
+        // create user in authFirebase and send email confirmation
+        const result = await resultCreateUser(user, 'admin_wahb_dev');
+
+        if (!result){
+            console.log('Error al crear el administrador por default');
+            return;
         }
-        // create user with email and password in Firebase Auth
-        const { uid } = await configDb.auth().createUser(propertiesDataUser);
-        // create custom token with id user
-        const token = await  configDb.auth().createCustomToken(uid);
-        // get auth and app initialize in file -> google config
-        const auth = authFirebase.getAuth();
-        // authenticate user, param token and auth app
-        const result = await authFirebase.signInWithCustomToken(auth, token);
-        // send email verification
-        await authFirebase.sendEmailVerification(result.user);
-        // logout app user
-        await authFirebase.signOut(auth);
+
         // save data user in firestore
         await getUsersCollection().add(user);
     } catch (error) {
@@ -159,6 +151,12 @@ const createUser = async (req, res) => {
         user.role       = params.role;
         user.status     = USER_STATUS.INACTIVE;
         user.canVote    = false;
+        // se crea el usuario y se envia el correo de confirmacion de email
+        const resultCreate = await resultCreateUser(user, params.password);
+        if(!resultCreate){
+            return res.status(400).send({ message: 'Error al crear el usuario' });
+        }
+
         let savedUser   = await getUsersCollection().add(user);
         let newUser     = await getParsedUserById(savedUser.id);
 
@@ -168,6 +166,31 @@ const createUser = async (req, res) => {
     } catch (error) {
         console.error(error);
         return res.status(400).send(error);
+    }
+}
+
+const resultCreateUser = async (dataUser, paramsPassword = 'adminPass') => {
+    try {
+        // create email and password in authentication
+        const propertiesDataUser = {
+            'password': paramsPassword,
+            'email': dataUser.email
+        }
+        // create user with email and password in Firebase Auth
+        const { uid } = await configDb.auth().createUser(propertiesDataUser);
+        // create custom token with id user
+        const token = await  configDb.auth().createCustomToken(uid);
+        // get auth and app initialize in file -> google config
+        const auth = authFirebase.getAuth();
+        // authenticate user, param token and auth app
+        const result = await authFirebase.signInWithCustomToken(auth, token);
+        // send email verification
+        await authFirebase.sendEmailVerification(result.user);
+        // logout app user
+        await authFirebase.signOut(auth);
+        return true;
+    } catch (e) {
+        return false;
     }
 }
 
@@ -181,7 +204,7 @@ const login = async (req, res) => {
         }
         let userId      = user.id;
         if (user.status === USER_STATUS.INACTIVE) {
-            return res.status(403).send({ message: 'Acceso Denegado' });
+            return res.status(403).send({ message: 'Usuario no activado' });
         }
         if (user.role === USER_ROLES.SUPER_ADMIN || user.role === USER_ROLES.SYSTEMS) {
             let passwordMatchs = await compareWithHashed(params.password, user.password);
