@@ -9,6 +9,7 @@ var api                      = express.Router();
 // ROUTES
 
 api.post('/admin/assemblies/:id/attendance', md_auth.ensureAuth, attendanceController.markAssistance);
+api.get('/admin/assemblies/:id/reset', md_auth.ensureAuth, attendanceController.resetAssemblie);
 
 
 // EXPORTS

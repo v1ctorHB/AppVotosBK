@@ -17,7 +17,7 @@ const markAssistance = async (req, res) => {
         if (!userReq) {
             return res.status(400).send({ message: 'El Usuario Autenticado No Existe' });
         }
-        if (!validateRoles(userReq.role) || userReq.status == USER_STATUS.INACTIVE) {
+        if (!validateRoles(userReq.role) || userReq.status === USER_STATUS.INACTIVE) {
             return res.status(403).send({ message: 'Acceso Denegado' });
         }
 
@@ -47,7 +47,36 @@ const markAssistance = async (req, res) => {
         return res.status(200).send({ message: 'Se Ha Generado La Asistencia Correctamente' });
 
     } catch (error) {
-        console.error(error);
+        return res.status(400).send(error);
+    }
+}
+
+// function reset quorum
+const resetAssemblie = async (req, res) => {
+    try {
+        let userReq = await getParsedElementFromDBById(COLLECTIONS.USERS, req.user.sub);
+        if (!userReq) {
+            return res.status(400).send({ message: 'El Usuario Autenticado No Existe' });
+        }
+        if (!validateRoles(userReq.role) || userReq.status === USER_STATUS.INACTIVE) {
+            return res.status(403).send({ message: 'Acceso Denegado' });
+        }
+        let assemblyId = req.params.id;
+        let result = await getCollection(COLLECTIONS.ATTENDANCE)
+            .where('assemblyId', '==' ,assemblyId).get();
+        // validate exist doc
+        if(!result.docs.length){
+            return res.status(403).send({ message: 'Error al encontrar el forum' });
+        }
+        let assembly = parseSnapshot(result)[0];
+        let idDoc = assembly.id;
+
+        // delete forum
+        await getDocById(COLLECTIONS.ATTENDANCE, idDoc).delete();
+        return res.status(200).send({ message: 'Se ha reiniciado el Quorum!' });
+
+
+    }catch (e) {
         return res.status(400).send(error);
     }
 }
@@ -59,6 +88,12 @@ const updateRecursiveCanVote = async (forum, canVote, index = 0) => {
         }
         await updateRecursiveCanVote(forum, canVote, index + 1);
     }
+}
+
+const parseSnapshot = (snapshot) => {
+    return snapshot.docs.map((element) => {
+        return { id: element.id, ...element.data() };
+    });
 }
 
 /**
@@ -75,4 +110,5 @@ const validateRoles = role =>
 module.exports = {
     markAssistance,
     updateRecursiveCanVote,
+    resetAssemblie,
 }
