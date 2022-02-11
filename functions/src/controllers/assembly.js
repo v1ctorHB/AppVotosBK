@@ -5,7 +5,7 @@ const { updateRecursiveCanVote }    = require('../controllers/attendance');
 const { COLLECTIONS }               = require('../enums/db-collections.enums');
 const { USER_ROLES, USER_STATUS }   = require('../enums/user.enums'); 
 const {
-    getCollection, getDocById, getParsedElementFromDBById
+    getCollection, getDocById, getParsedElementFromDBById, parseQuerySnapshot
 }                                   = require('../services/base-firestore');
 
 const createAssembly = async (req, res) => {
@@ -192,6 +192,105 @@ const updateAssemblyStatus = async (req, res) => {
     }
 }
 
+const changeShowPoints = async (req, res) => {
+  try{
+      let params = req.body;
+      let assemblyId      = req.params.idAssembly;
+      // validate permissions for user
+      let userReq = await getParsedElementFromDBById(COLLECTIONS.USERS, req.user.sub);
+      if (!userReq) {
+          return res.status(404).send({ message: 'El Usuario Autenticado No Existe' });
+      }
+      if (userReq.status == USER_STATUS.INACTIVE) {
+          return res.status(403).send({ message: 'Acceso Denegado' });
+      }
+
+      let showPointResult = {};
+      showPointResult.showPointResult = params.status;
+      let assembly = await getParsedAssemblyById(assemblyId);
+      if (!assembly) {
+          return res.status(404).send({ message: 'Asamblea No Encontrada' });
+      }
+
+      // update points in assembly
+      let pointsSnap = await getCollection(COLLECTIONS.POINTS)
+          .where('assemblyId', '==', assemblyId).get();
+
+      let points = parseQuerySnapshot(pointsSnap);
+
+      if (points) {
+          for (const data of points) {
+              let showPointResult = {};
+              showPointResult.showPointResult = true;
+              try{
+                  let updatePoint = await getDocById(COLLECTIONS.POINTS, data.id).update(showPointResult);
+              }catch (e) {
+                  console.log(e);
+              }
+          }
+      }
+
+      // update document
+      let updatedAssambleis = await getAssemblyDocById(assemblyId).update(showPointResult);
+
+      if (!updatedAssambleis) {
+          return res.status(500).send({ message: 'Error Al Actualizar Asamblea' });
+      }
+
+      return res.status(200).send({ message: 'Se muestra todos los puntos de la agenda.' });
+
+  }catch (e) {
+      return res.status(400).send(error);
+  }
+}
+
+const multiPointAssembly = async (req, res) => {
+    let params = req.body;
+    let assemblyId      = req.params.idAssembly;
+    // validate permissions for user
+    let userReq = await getParsedElementFromDBById(COLLECTIONS.USERS, req.user.sub);
+    if (!userReq) {
+        return res.status(404).send({ message: 'El Usuario Autenticado No Existe' });
+    }
+    if (userReq.status == USER_STATUS.INACTIVE) {
+        return res.status(403).send({ message: 'Acceso Denegado' });
+    }
+
+    let showPointResult = {};
+    showPointResult.showPointResult = params.status;
+    let assembly = await getParsedAssemblyById(assemblyId);
+    if (!assembly) {
+        return res.status(404).send({ message: 'Asamblea No Encontrada' });
+    }
+
+    // update document
+    let updatedAssambleis = await getAssemblyDocById(assemblyId).update(showPointResult);
+    return res.status(200).send({ message: 'Se mostraran multiples puntos de la agenda.' });
+}
+
+const updateShowById = async (req, res) => {
+    try{
+        let params = req.body;
+        let idPoint      = req.params.idPoint;
+        // validate permissions for user
+        let userReq = await getParsedElementFromDBById(COLLECTIONS.USERS, req.user.sub);
+        if (!userReq) {
+            return res.status(404).send({ message: 'El Usuario Autenticado No Existe' });
+        }
+        if (userReq.status == USER_STATUS.INACTIVE) {
+            return res.status(403).send({ message: 'Acceso Denegado' });
+        }
+
+        let showPointResult = {};
+        showPointResult.showPointResult = params.status;
+
+        let updatedPoint = await getDocById(COLLECTIONS.POINTS, idPoint).update(showPointResult);
+        return  res.status(200).send({ message: 'Se Actualizo el punto de la agenda.' });
+    } catch (e) {
+        return res.status(400).send(error);
+    }
+}
+
 const getActiveAssembly = async (req, res) => {
     try {
         let userReq = await getParsedElementFromDBById(COLLECTIONS.USERS, req.user.sub);
@@ -307,4 +406,7 @@ module.exports = {
     getAssemblyById,
     listAssemblies,
     getActiveAssembly,
+    changeShowPoints,
+    multiPointAssembly,
+    updateShowById
 }

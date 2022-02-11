@@ -34,6 +34,7 @@ const createPoint = async (req, res) => {
         point.image         = params.image || '';
         point.assemblyId    = assembly.id;
         point.inFavor       = 0;
+        point.showPointResult = true;
         point.nay           = 0;
         point.abstinence    = 0;
         point.isActive      = false;
@@ -156,7 +157,8 @@ const listPointsByAssemblyId = async (req, res) => {
         if (!assembly) {
             return res.status(404).send({ message: 'Asamblea No Encontrada' });
         }
-        let pointsSnap = await getCollection(COLLECTIONS.POINTS).where('assemblyId', '==', assemblyId).get();
+        let pointsSnap = await getCollection(COLLECTIONS.POINTS)
+            .where('assemblyId', '==', assemblyId).get();
         let points = parseQuerySnapshot(pointsSnap);
         if (!points) {
             return res.status(404).send({ message: 'Puntos De Asamblea No Encontrados' });

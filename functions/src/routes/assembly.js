@@ -14,9 +14,11 @@ api.delete('/admin/assemblies/:id',     md_auth.ensureAuth, assemblyController.d
 api.get('/admin/assemblies/:id',        md_auth.ensureAuth, assemblyController.getAssemblyById);
 api.get('/admin/assemblies',            md_auth.ensureAuth, assemblyController.listAssemblies);
 
-// api.get('/assemblies/:id',              md_auth.ensureAuth, assemblyController.getAssemblyById);
 // api votantes
 api.get('/assemblies/active',           md_auth.ensureAuth, assemblyController.getActiveAssembly);
+api.post('/assemblies/changeShowPoints/:idAssembly', md_auth.ensureAuth, assemblyController.changeShowPoints);
+api.post('/assemblies/changeMultiPoints/:idAssembly', md_auth.ensureAuth, assemblyController.multiPointAssembly);
+api.put('/assemblies/updateShowById/:idPoint', md_auth.ensureAuth, assemblyController.updateShowById);
 
 // EXPORTS
 module.exports = api;
