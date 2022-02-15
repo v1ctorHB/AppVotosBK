@@ -30,6 +30,7 @@ const createPoint = async (req, res) => {
         let point = Point;
         point.name          = params.name;
         point.description   = params.description;
+        point.ordenDia      = params.ordenDia;
         point.file          = params.file || '';
         point.image         = params.image || '';
         point.assemblyId    = assembly.id;
@@ -75,7 +76,7 @@ const updatePoint = async (req, res) => {
         if (params.description != null) object2Update.description = params.description;
         if (params.file != null)        object2Update.file = params.file;
         if (params.image != null)       object2Update.image = params.image;
-
+        object2Update.ordenDia = params.ordenDia;
         let updatedPoint = await getDocById(COLLECTIONS.POINTS, point2Update.id).update(object2Update);
         if (!updatedPoint) {
             return res.status(500).send({ message: 'Error Actualizando Punto De Asamblea' });

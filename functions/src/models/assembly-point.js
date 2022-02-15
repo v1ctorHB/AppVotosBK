@@ -3,6 +3,7 @@
 var AssemblyPoint = {
   name:         String,
   description:  String,
+  ordenDia:     String,
   file:         String,
   image:        String,
   assemblyId:   String,
